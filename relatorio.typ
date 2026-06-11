@@ -121,7 +121,7 @@ Isso é importante, pois mostra que devemos nos preocupar com a tensão máxima 
 
 == Transformador
 
-O transformador é responsável por converter uma tensão de entrada $V_1$ em outra tensão de entrada $V_2$, que pode ser maior ou maior, dependendo na relação do número de espiras na entrada e na saída.
+O transformador é responsável por converter uma tensão de entrada $V_1$ em outra tensão de saída $V_2$, que pode ser maior ou menor, dependendo na relação do número de espiras na entrada e na saída.
 
 #figure(
   image("./images/transformer.png", height: 20%),
@@ -179,7 +179,27 @@ O capacitor é um componente dinâmico, e possui 4 comportamentos diferentes:
 
 O capacitor não sofre com o surto de corrente inicial, mas pode sobrecarregar outros compontentes. O único ponto a se prestar atenção para o capacitor é a tensão máxima que ele suporta.
 
-== Continuar...
+== LED + Resistor
+
+O LED apenas serve para indicar se a fonte está ligada e com corrente fluindo. O Resistor evita que o LED queime.
+
+== Diodo Zener
+
+O diodo Zener funciona como uma válvula de escape quando polarizado reversamente. Se conectado de forma direta, ele conduz como um diodo de silício comum (queda de ≈ 0.7V). Nesse projeto, vamos utilizar um diodo Zener de 13V.
+
+Quando a tensão está abaixo de 13V, a tensão nos seus terminais é igual à tensão da fonte. Em uma tensão muito baixa, o Zenner simplesmente impede a passagem de corrente (assim como um diodo de germânio comum abaixo de 0.7V, por exemplo).
+
+Acima de 13V, o Zenner trava a tensão em seus terminais em 13V. E a corrente excedente começa a fluir pelo Zenner. Assim, se temos uma tensão oscilando entre 15V e 20V, por exemplo, o Zenner garante os 13V estáveis. É como uma torneira em uma caixa d'água balançando: A torneira sempre abaixo da oscilação garante um fluxo constante.
+
+== Potenciômetro + R2
+
+Servem como divisor de tensão. Se o Zenner fornece 13V, o potenciômetro com R2 oferecem ao usuário escolher entre 13V e uma tensão menor ajustável.
+
+== Transistor NPN
+
+O transistor mantém a tensão da base que produzimos com o Zenner no emissor, com uma pequena queda. A vantagem de usar o transistor é que a corrente que vai para a carga não vai passar pelo Zenner + Potenciômetro + Resistores, sobrecarregando eles. A corrente vem direto da ponte de diodos.
+
+Essa é a definição principal de um "Transistor de Passagem em Série": amplificar a corrente enquanto mantém a tensão espelhada, isolando a malha de controle sensível da malha de potência pesada.
 
 = Resolvendo circuito
 
@@ -203,7 +223,7 @@ $ sum i_"sai" = sum i_"entra" $
 
 $ sum V = 0 $
 
-5. *Relação entre $V_"max" "e" V_"rms"$*
+5. *Relação entre $V_"max" "e" V_"rms"$* - Válido apenas para fontes senoidais puras (tomada, antes dos diodos).
 
 $ V_"max" = sqrt(2) dot V_"rms" $
 
@@ -221,19 +241,109 @@ E o que queremos calcular?
 
 Bom, os componentes que precisam de atenção são:
 
-- Capacitor: Precisa suportar a tensão da fonte
+- Capacitor: Precisa suportar a tensão da fonte e ter capacitância para um bom Ripple
 - LED: Precisa operar abaixo da corrente máxima
 - Zenner: Precisa receber uma tensão acima da tensão de ruptura e suportar a corrente
-- Transistor: Precisa suportar a corrente que passa por ele
 
-== Capacitor
+== Calculando corrente total
 
-O capacitor precisa:
+Na direita do circuito, temos componentes estáticos. 
 
-- Suportar a tensão da fonte
-- Ter capacitância relevante para um Ripple baixo
+#figure(
+  image("./images/resistance-circuit.png", width: 80%),
+  caption: [Circuito RC com fonte AC],
+)
 
-=== Achando tensão ideal de capacitor
+Para calcular a corrente total, vamos calcular por partes e fazer a somatória das correntes.
+
+=== LED + $R_"led"$
+
+Aqui é simples. Consideramos o LED como um curto-circuito (baixa resistência) e temos apenas o resistor.
+
+$ I_1 = (V_0-V_"led")/R_"led" $
+
+Conseguimos encontrar a primeira corrente que sai do nó.
+
+Já podemos calcular, inclusive, a Resistência que precisamos colocar no LED. Vamos considerar um LED difuso comercial comum @led-shopping com $V_"led" = 1.6V$ (LED vermelho) e corrente máxima de 20mA.
+
+Vamos tentar obter uma corrente ideal de 15mA.
+
+$ 0.015 = (V_0-2)/R_"led" $
+$ R_"led" = (V_0-2)/0.015 $
+
+Para obter a resistência mais segura, precisamos considerar $V_"max" = 25V$ para maximizar o valor da nossa resistência.
+
+$ R_"led"_"max" = (V_"max"-2)/0.015 = (25-2)/0.015 = 1533 k Omega$
+
+Assim, a resistência mínima ideal é de $1550 k Omega$. Vamos utilizar $R_"led" = 1.5 k Omega$.
+
+=== Resistor R1 + Zenner
+
+O Zenner, após a tensão de ruptura, atua como uma fonte de tensão DC. Assim, a corrente $I 2$ que passa pelo R1 é:
+
+$ I_2=(V_0-V_z)/R_1 $
+
+Conseguimos encontrar a segunda corrente que sai do nó.
+
+=== Potenciômetro + R2
+
+Aqui, vamos calcular a tensão que vai para a base do transistor. Vamos chamar as resistências internas do potenciômetro de $R_"1p", R_"2p"$.
+
+A construção do potenciômetro o torna um divisor de tensão nato. Segue a configuração de um divisor de tensão qualquer:
+
+#figure(
+  image("./images/tension-divider.png", width: 80%),
+  caption: [Circuito RC com fonte AC],
+)
+
+Ali no circuito temos o mesmo, mas o resistor de baixo é a soma de $R_"2p" + R_2$. Assim, temos na base do transistor:
+
+$ V_B = ((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z $
+
+=== Transistor
+
+Para o transistor, temos:
+
+$ I_E = I_B + I_C $ e $ beta = I_C/I_B $
+
+Unindo os dois, temos: 
+
+$ I_E = I_C dot (1/beta + 1) $
+
+A tensão da base, em um transistor, é replicada ao emissor, porém com uma pequena perda (como no diodo). Vamos chamar essa perda de $V_"BE"$.
+
+$ V_E = V_B - V_"BE" $
+
+Por lei de Ohm, temos na carga:
+
+$ I_E = V_E/R_q = (V_B-V_"BE")/R_q $
+
+Igualando ao $I_E$ encontrado anteriormente:
+
+$ I_C dot (1/beta + 1) = (V_B-V_"BE")/R_q $
+$ I_C = (V_B-V_"BE")/(R_q dot (1/beta + 1)) $
+
+Conseguimos encontrar a última corrente que sai do nó.
+
+=== Unindo tudo e calculando corrente total
+
+Agora, basta somar as correntes que saem do nó para obter a corrente total que entra.
+
+$ I_t = I_1 + I_2 + I_C $
+
+$ I_t = (V_0-V_"led")/R_"led" + (V_0-V_z)/R_1 + (V_B-V_"BE")/(R_q dot (1/beta + 1)) $
+
+E para fins práticos, é melhor substituir $R_q = V_E / I_E$, onde $ V_E = V_B - V_"BE" $ (é mais fácil dizer a corrente máxima/mínima do que a resistência máxima/mínima de uma bateria).
+
+$ I_t = (V_0-V_"led")/R_"led" + (V_0-V_z)/R_1 + (V_B-V_"BE")/(R_q dot (1/beta + 1)) $
+
+E para obter a resistência equivalente, basta usar $V_0 = R_"eq"I_t$
+
+$ I_t = (V_0-V_"led")/R_"led" + (V_0-V_z)/R_1 + (V_B-V_"BE")/(((V_B-V_"BE") / I_E) dot (1/beta + 1)) $
+
+$ I_t = (V_0-V_"led")/R_"led" + (V_0-V_z)/R_1 + I_E/(1/beta + 1)) $
+
+== Achando tensão máxima
 
 Resolver isso é simples. A tensão máxima, após passar pelo transformador e pelos diodos, é dada por:
 
@@ -260,182 +370,213 @@ $ N_1/N_2 = 127/V_"out-rms" $
 
 Quanto menor a razão $N_1/N_2$, maior $V_"out"$. Por segurança, vamos utilizar o menor valor de modo a considerar o pior caso.
 
-$ V_"out-rms" = N_2/N_1 dot 127 = 1/7 dot 127 = 18.14 V$
+$ V_"out-rms" = N_2/N_1 dot 127 = 1/7 dot 127 = 18.14 V $
 
 $ V_"max" = sqrt(2) dot V_"out-rms" - 2 dot V_"d" $
 
 Vamos considerar o pior caso (diodos de Silício, que consomem entre 0.2V e 0.3V).
 
-$ V_"max" = sqrt(2) dot 18.14 - 2 dot 0.2  = 25.25 V$
+$ V_"max" = sqrt(2) dot 18.14 - 2 dot 0.2  = 25.25 V $
 
-Como a tensão máxima é de 25.25 V no pior caso, por segurança iremos utilizar um capacitor de 30V.
+== Achando R2
 
-=== Calculando resistência equivalente
-
-Na direita do circuito, temos componentes estáticos. 
-
-#figure(
-  image("./images/resistance-circuit.png", width: 80%),
-  caption: [Circuito RC com fonte AC],
-)
-
-Para calcular a resistência equivalente, como já temos a tensão $V_0$ da fonte, basta obter a corrente total $I_t$. Vamos calcular por partes.
-
-==== LED + $R_"led"$
-
-Aqui é simples. Consideramos o LED como um curto-circuito (baixa resistência) e temos apenas o resistor.
-
-$ I_1 = V_0/R_"led" $
-
-Conseguimos encontrar a primeira corrente que sai do nó.
-
-==== Resistor R1 + Zenner
-
-O Zenner, após a tensão de ruptura, atua como uma fonte de tensão DC. Assim, a corrente $I 2$ que passa pelo R1 é:
-
-$ I_2=(V_0-V_z)/R_1 $
-
-Conseguimos encontrar a segunda corrente que sai do nó.
-
-==== Potenciômetro + R2
-
-Aqui, vamos calcular a tensão que vai para a base do transistor. Vamos chamar as resistências internas do potenciômetro de $R_"1p", R_"2p"$.
-
-A construção do potenciômetro o torna um divisor de tensão nato. Segue a configuração de um divisor de tensão qualquer:
-
-#figure(
-  image("./images/tension-divider.png", width: 80%),
-  caption: [Circuito RC com fonte AC],
-)
-
-Ali no circuito temos o mesmo, mas o resistor de baixo é a soma de $R_"2p" + R_2$. Assim, temos na base do transistor:
+Para o divisor de tensão com potenciômetro e R2, temos que: 
 
 $ V_B = ((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z $
 
-==== Transistor
+Isolando $V_B$:
 
-Para o transistor, temos:
+$ R_2 = (V_("B")(R_"1p" + R_"2p") - V_z R_"2p")/(V_z - V_"B") $
 
-$ I_E = I_B + I_C $ e $ beta = I_C/I_B $
+Utilizaremos a tensão mínima, pois a tensão máxima é definida pelo Zenner (13 V), com algumas pequenas perdas. A tensão mínima é definida pelo valor de R2.
 
-Unindo os dois, temos: 
+Temos:
 
-$ I_E = I_C dot (1/beta + 1) $
+- $R_"1p" + R_"2p" = 10 k Omega$
+- $V_"B(min)" = 3.7V$ (3V + 0.7V dissipados)
 
-A tensão da base, em um transistor, é replicada ao emissor, porém com uma pequena perda (como no diodo). Vamos chamar essa perda de $V_"BE"$.
+Como queremos a resistência mínima, esta será o máximo valor da equação acima, que é dado quando $R_"rp" = 0$. Assim:
 
-$ V_E = V_B - V_"BE" $
+$ R_2 = (V_("B(min)")(R_"1p" + R_"2p"))/(V_z - V_"B(min)") $
 
-Por lei de Ohm, temos na carga:
+$ R_2 = (3.7 dot 10 000)/(13 - 3.7) = 3978 approx 4 k Omega $
 
-$ I_E = V_E/R_q = (V_B-V_"BE")/R_q $
+Vamos escolher $R 2  = 4.5 k Omega$.
 
-Igualando ao $I_E$ encontrado anteriormente:
+== Achando R1 
 
-$ I_C dot (1/beta + 1) = (V_B-V_"BE")/R_q $
-$ I_C = (V_B-V_"BE")/(R_q dot (1/beta + 1)) $
+A função do resistor R1 é garantir que a corrente que sobra para o Zener seja maior que a corrente mínima de ruptura. A boa notícia é que, com o transistor, a alimentação da carga não puxa muita corrente a ponto de desligar o Zenner.
 
-Conseguimos encontrar a última corrente que sai do nó.
+Para um Zenner In4743 de 13V, temos:
 
-==== Unindo tudo e calculando Resistência equivalente
+- $I_"min" = 19 m A$ - Corrente ideal. Abaixo disso, a resistência do Zenner começa a aumentar, e não garante os 13V.
+- $I_"max" = 69 m A$ - Acima disso, queima.
 
-Agora, basta somar as correntes que saem do nó para obter a corrente total que entra.
+Vamos tentar obter essa corrente ideal no diodo zenner. Pra isso, primeiro vamos calcular a corrente que vai pra base do transistor. Temos:
 
-$ I_t = I_1 + I_2 + I_C $
+$ beta = I_C/I_B , I_C = (V_B - V_"BE")/(R_q dot (1/beta + 1)), V_B = ((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z $
 
-$ I_t = V_0/R_"led" + (V_0-V_z)/R_1 + (V_B-V_"BE")/(R_q dot (1/beta + 1)) $
+Unindo tudo, temos:
 
-E para obter a resistência equivalente, basta usar $V_0 = R_"eq"I_t$
+$ I_B beta = (V_B - V_"BE")/(R_q(1/beta + 1)) $
+$ I_B = (((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z - V_"BE")/(R_q dot (1 + beta)) $
 
-$ R_"eq" = V_0(V_0/R_"led" + (V_0-V_z)/R_1 + (V_B-V_"BE")/(R_q dot (1/beta + 1)))^(-1) $
+De outra forma, também temos: 
 
-Substituindo $V_B$, temos a fórmula final
+$ I_B = I_E/(1 + beta) $
 
-$ R_"eq" = V_0(V_0/R_"led" + (V_0-V_z)/R_1 + (((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z -V_"BE")/(R_q dot (1/beta + 1)))^(-1) $
+Faz mais sentido pensar em $I_B$ usando a corrente máxima de saída que esperamos para a carga.
 
-==== Resistência equivalente com dados do projeto
+E para a corrente que desce pra baixo do potenciômetro:
 
-Vamos utilizar os dados do projeto para obter a resistência equivalente.
+$ I_"pot" = V_z/(R_"1p" + R_"2p" + R_2) $
 
-- 
+Ok. Agora, para R1, temos:
 
-=== Achando capacitância ideal para o capacitor
+$ I_r = (V_0 - V_z)/R_1, I_r = I_z + I_B + I_"pot" $
 
-Seguindo a tensão de Ripple:
+Substituindo para deixar tudo em função de R1:
 
-$ V_"rpp" = V_"max" (1-e^(-1/(f R C))) $
+$ (V_0 - V_z)/R_1 = I_z + I_B +I_"pot"$
+$ R_1 = (V_0 - V_z)/(I_z + I_B +I_"pot") $
+$ R_1 = (V_0 - V_z)/(I_z + I_E/(1 + beta) + V_z/(R_"1p" + R_"2p" + R_2)) $
 
-Observando a fórmula, vemos que quando maior for o termo $f R C$, menor será o Ripple. Como a nossa fonte é retificada completa, a frequência é o dobro da rede elétrica ($2 dot 60$ Hz).
+=== Cenário 1: Garantindo que o Zener não desligue
 
-==== Capacitância mínima em função da eficiência
+Para que o Zener não desligue:
 
-Para calcular a eficiência da tensão de Ripple, podemos calcular o rendimento (o quanto da tensão máxima é garantido o tempo todo):
+$ R_1_"max" = (V_"0(min)"-V_z)/(I_"z(min)"+I_"B(max)"+I_"pot") $
 
-$ eta = (V_"max" - V_"rpp")/V_"max" = e^(-1/(f R C)) $
+Vamos usar:
 
-Podemos calcular a Capacitância necessária para garantir um certo rendimento:
+- $V_0 = V_"min" = 23V$
+- $V_z = 13V$
+- $R_2 = 4.5K Omega$
+- $V_"BE" = 0.7V$
+- $R_"1p" + R_"2p" = 10 k Omega$
+- $beta = 100$
+- $I_z = I_"min" = 19 m A$
+- $I_"max" = 2A$ - Valor estipulado com base na bateria real @ion-battery (Corrente de carga rápida = 1.3A)
 
-$ e^(-1/(f R C)) = eta $
-$ -1/(f R C) = ln(eta) $
-$ C = -1/(f R ln(eta)) $
+$ R_1_"max" = (23 - 13)/(0.019 + 2/(1+100) + 13/(10000 + 4500)) = 252 Omega $
 
-Para 18V sendo fornecidos, queremos garantir pelo menos 15V (13V é a tensão de ruptura do diodo Zenner e +2V de folga). Assim:
+Qualquer resistor maior que este valor fará o Zener regular menos de 13 V no vale do ripple quando a carga puxar 2A.
 
-$ eta = 15/18 approx 0.84 $
+=== Cenário 2: Garantindo que o Zener não queime
 
-==== Obtendo resistência equivalente de carga mínima
+Para que o Zener não queime:
 
-Para saber a resistência mínima de carga, vamos utilizar a resistência equivalente que calculamos e tentar achar o mínimo dela.
+$ R_1_"min" = (V_"0(max)"-V_z)/(I_"z(max)"+0+I_"pot") $
 
-Vamos já calcular o resistor necessário para o LED. Considerando $V_"max"=25V$ e querendo uma corrente segura $I_1 = 10m A$, então:
+Vamos usar:
 
-$ R_"led" = V_"max"/I_1=25/0.01=1250 Omega $
+- $V_0 = V_"max" = 25V$
+- $V_z = 13V$
+- $R_2 = 4.5K Omega$
+- $V_"BE" = 0.7V$
+- $R_"1p" + R_"2p" = 10 k Omega$
+- $beta = 100$
+- $I_z = I_"max" = 69 m A$
+- $I_"min" = 0A$
 
-E a corrente máxima sendo de $I_1 = 20m A$
+$ R_1_"min" = (25 - 13)/(0.069 + 0 + 13/(10000 + 4000)) = 171 Omega $
 
-$ R_"led" = V_"max"/I_1=25/0.02=625 Omega $
+Qualquer resistor menor que este valor fará o Zener queimar quando a carga for removida.
 
-Para fins práticos, será utilizado um resistor de $1 k Omega$.
+=== Conclusão de R1
 
-$ R_"eq" = V_0(V_0/R_"led" + (V_0-V_z)/R_1 + (((R_"2p" + R_2)/(R_"1p" + R_"2p" + R_2))V_z -V_"BE")/(R_q dot (1/beta + 1)))^(-1) $
+R1 deve ser um valor entre:
+
+$ 171 < R 1 < 252 $
+
+Vamos escolher $R 1  = 200 Omega$.
+
+== Capacitor
+
+O capacitor precisa:
+
+- Suportar a tensão da fonte
+- Ter capacitância relevante para um Ripple baixo
+
+=== Achando tensão ideal de capacitor
+
+A tensão máxima no pior caso já foi dada anteriormente: 25.25V. Como a tensão máxima é de 25.25 V no pior caso, por segurança iremos utilizar um capacitor de 30V.
+
+=== Achando capacitância ideal para o capacitor (refazendo)
+
+Para um capacitor, temos:
+
+$ C = Q/V = (triangle Q)/(triangle V) $
+
+Como $ triangle Q = I triangle t$, por definição:
+
+$ C = (I triangle t)/(V_"max" - V_"min") $
+
+Aqui, estamos considerando uma corrente constante, uma variação de tensão (nosso $V_"max" - V_"rpp"$) e um tempo de descarga $triangle t$.
+
+Vamos calcular esse tempo de descarga. Bom, vamos considerar que, para uma onda cossenoide, o ângulo onde $V_"max"$ é atingido é em 0°.
+
+$ V_"fonte-ret" = 25|cos(2pi f t)| = 25|cos(120 pi t)|$
+
+Precisamos descobrir em qual ângulo a próxima onda atinge os 16.7V para iniciar a recarga.
+
+1. A onda tem seu pico em t = 0 e começa a cair. Aqui, o capacitor começa a descarregar.
+2. A onda atinge 0V em $pi/2$
+3. Entre $pi/2$ e $pi$ a onda atinge o valor mínimo para o capacitor parar de descarregar, que é o $ V_"min" = 15V$ que queremos.
+
+$ 25cos(theta) = 15 arrow.r.double theta = arccos(15/25) = 0.927 "rad" $
+
+Assim, a onda tem que percorrer $pi - 0.927$ rad desde o pico até encontrar o capacitor novamente.
+
+$ w = 2 pi f = 120 pi , w = (triangle theta) / (triangle t) $
+$ t = (triangle theta) / (120 pi) arrow.r.double t = (pi - 0.927) / (120 pi) = 0.00587 s $
+
+Para calcular a capacitância mínima, vamos encontrar a corrente máxima para nosso cenário, utilizando a fórmula de corrente total que calculamos anteriormente.
 
 Vamos utilizar:
 
-- $V_0 = V_"min" = 15$V
-- $R_"led" = 1 k Omega$
-- $R_"1p" + R_"2p" = 10k Omega$
+- $V_0 = V_"max" = 25$V
+- $R_"led" = 1.5 k Omega$
 - $V_z = 13V$
 - $V_"BE" = 0.7V$
-- $R_q = 50m Omega$ - Resistência mínima de uma bateria de celular @bonnenbatterie
+- $I_E = 2A$ - Corrente máxima do celular (caso onde a Req é mínima)
 - $beta = 100$ (mínimo)
-- $R_1, R_2$ - A serem determinados
+- $R_1 = 200 Omega, R_2 4 k Omega$
 
-$ R_"eq" = 15(15/1000 + 2/R_1 + (((R_"2p" + R_2)/(10000 + R_2))13 - 0.7)/(0.0505))^(-1) $
+$ I_t = (V_0-V_"led")/R_"led" + (V_0-V_z)/R_1 + I_E/(1/beta + 1) $
+$ I_t = (25-2)/1500 + (25-13)/200 + 2/(1/100 + 1) = 2,06 A $
 
-==== Cálculo final da capacitância
+Agora, apenas substituímos tudo na equação da capacitância:
 
-Substituindo f = 120 Hz, R = 100$Omega$, $eta$ = 0.84 na fórmula:
+$ C = (I triangle t)/(V_"max" - V_"min") = (2.06 dot 0.00587)/(25 - 15) = 1209 mu F $
 
-$ C = -1/(120 dot 100 dot ln(0.84)) approx 0.000478$
+Portanto, nosso capacitor deve ter no mínimo $ 1200 m F$ para a fonte conseguir entregar uma corrente DC estável no pior cenário possível (carga consumindo 2A).
 
-Isso indica que, para garantirmos os 15V, precisamos de no mínimo um capacitor com C = 478 $mu$F.
+Ao testar no Falstad com as mesmas condições iniciais dadas, verificamos que realmente, nesse valor de capacitância a tensão permanece minimamente estável, e abaixo dele ela começa a flutuar muito.
 
+Vamos escolher um capacitor de 1500 $mu$F, para ter uma folga.
 
-== LED
+= Lista de componentes
 
-O LED precisa receber uma corrente abaixo da corrente limite que suporta.
+Dados os cálculos, podemos fazer a lista de componentes. Vamos retomar o que calculamos.
 
-== Zenner
+- $R_"led"_"min" = 1.5 k Omega$ - Escolheremos $R_"led" = 1200 Omega$
+- $171 Omega< R_1 < 252 Omega$ - Escolheremos $R_1 = 200 Omega$
+- $R_2_"min" = 3978 Omega$ - Escolheremos $R_2 = 4.5 k Omega$
+- $V_"max" = 25,25 V$ - Escolheremos uma tensão máxima para o capacitor de 30V
+- $C_"min" = 1209 mu F$ - Escolheremos $C = 1500 mu F$
+- $I_"max" = 2 A$ (transistor) - Escolheremos $I_"max" = 3A$ para o transistor
+- $I_t_"max" = 2.06 A$ (diodos) - Escolheremos $I_"max" = 3A$ para os diodos
 
-O Zenner precisa:
+Agora podemos fazer a lista de componentes.
 
-- Receber uma tensão acima da tensão de ruptura
-- Operar dentro da corrente ideal de trabalho
-
-== Transistor
-
-O transistor precisa operar abaixo da corrente máxima suportada.
-
+- 1 placa ilhada de cobre
+- Jumpers
+- 4 diodos $I_"max" = 3A$
+- 1 capacitor $C = 1500 mu F$, $V_"max" = 30V$
+- Resistores de $100 Omega$, $1k Omega$
+- 1 potenciômetro $10 k Omega$
+- 1 transistor $I_"max" = 3A$, $V_"max" = 30V$ 
 
 = Apêndice: Achando tensão de Ripple analiticamente
 
