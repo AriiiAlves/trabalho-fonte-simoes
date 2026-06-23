@@ -37,24 +37,24 @@
       8847378 \
     ],
     [
-      *Nome do Autor 2* \
-      NUSP B \
+      *Rodrigo Haruo Takihi* \
+      17922406 \
     ],
     [
-      *Nome do Autor 3* \
-      NUSP B \
+      *Fabio Czenszel Sanematsu* \
+      16864491 \
     ]
   )
   #grid(
     columns: (1fr, 1fr),
     gutter: 10pt,
     [
-      *Nome do Autor 1* \
-      NUSP A \
+      *Demétrio Nunes Canuto* \
+      17885722 \
     ],
     [
-      *Nome do Autor 2* \
-      NUSP B \
+      *Fernando Sato* \
+      17889855 \
     ]
   )
   
