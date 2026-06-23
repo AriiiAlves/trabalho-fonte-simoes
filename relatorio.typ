@@ -578,6 +578,35 @@ Agora podemos fazer a lista de componentes.
 - 1 potenciômetro $10 k Omega$
 - 1 transistor $I_"max" = 3A$, $V_"max" = 30V$ 
 
+= Valor das peças
+
+O valor total das peças gastas no conjunto foi de R\$ 78,40, incluindo:
+
+- 2 Capacitores 1500uF 63V - R\$ 15,00
+- Resistores 3 Ohms (foi comprado errado) - R\$ 5,00
+- Resistores 1k - R\$ 8,00
+- LED verde - R\$ 2,90
+- 5 Diodos Zenner - R\$ 7,50
+- Placa ilhada de cobre - R\$ 14,00
+- 4 diodos 3A (não foram utilizados, pernas muito grossas) - R\$ 10,00
+- 1 Ponte Retificadora 2A - R\$ 4,00
+- 1 Potenciômetro B10K - R\$ 7,00
+- Conector USB Fêmea - R\$ 5,00
+
+= Projeto na prática: Ajustes
+
+Na prática, utilizamos uma fonte cuja medida de corrente alternada resultou em 16 V. Ao colocá-la no circuito, a medida de corrente contínua resultou em 22V.
+
+O projeto funcionou perfeitamente, e todos os valores de componentes atenderam perfeitamente o circuito nessa configuração, exceto por dois:
+
+- Ajustamos $R_1$ para $1.2 k Omega$, pois o diodo Zenner estava superaquecendo (muita corrente passando), a ponto de quase queimar. A resistência anterior era pequena demais.
+
+- Ajustamos $R_2$ para $3.5 k Omega$, pois a d.d.p. mínima na carga estava atingindo $3.5 V$. Com esse ajuste, a d.d.p. mínima atingiu $3 V$, e a máxima, $12.67 V$.
+
+Desse modo, conseguimos uma tensão de corrente contínua estável ajustável entre 3V e 12.67V.
+
+O projeto da fonte foi concluido com sucesso.
+
 = Apêndice: Achando tensão de Ripple analiticamente
 
 Vamos considerar um circuito RC com uma fonte cujo sinal seja $V_"fonte"(t)=V_"max"cos(w t)$, de modo que $w = 2pi f$. A malha da direita representa o restante do nosso circuito, que não contém componentes dinâmicos.
