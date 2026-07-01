@@ -4,7 +4,7 @@ Incluir no seu GIT:
 
 - [Relatório](./relatorio.pdf) - Explica o projeto e possui fotos do esquemático no EAGLE e do _circuito montado_
 - [Projeto no Falstad](./projeto-fonte-falstad.txt)
-- [Vídeo Explicando o Projeto]() - _Explicar porque escolheu o valor dos componentes_...
+- [Vídeo Explicando o Projeto](./video-fonte)
 
 TODOS OS ALUNOS PRECISAM APRESENTAR O TRABALHO PESSOALMENTE!!
 Link para apresentação do Trabalho 1: link a ser informado
