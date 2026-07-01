@@ -86,6 +86,16 @@ O diagrama do projeto da fonte foi elaborado no simulador de circuito #link("htt
   caption: [Diagrama do Circuito de Fonte.],
 )
 
+#figure(
+  image("./images/eagle-1.jpg", width: 100%),
+  caption: [Diagrama do Circuito no Software Eagle.],
+)
+
+#figure(
+  image("./images/eagle-2.jpg", width: 100%),
+  caption: [Layout do Circuito no Software Eagle.],
+)
+
 Vamos explorar o que cada parte do circuito faz.
 
 == Fonte de tensão AC
