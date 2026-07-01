@@ -2,13 +2,9 @@
 
 Incluir no seu GIT:
 
-[] Diagrama da Fonte com os valores dos componentes escolhidos e uma lista de componentes, contendo valores e preços
-[] Link para o circuito no Falstad ou outro simulador
-[] Projeto do Esquemático e do PCB no EAGLE
-[] Incluir fotos da placa/protoboard com o circuito montado
-[] Incluir um VIDEO mostrando o Projeto funcionando e simulando, e explicando porque escolheu os valores dos componentes (Upa o vídeo no Youtube ou google drive e poe um link no Readme do teu Github/gitlab).
-[] Dicas de como fazer o README do github: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+- [Relatório](./relatorio.pdf) - Explica o projeto e possui fotos do esquemático no EAGLE e do _circuito montado_
+- [Projeto no Falstad](./projeto-fonte-falstad.txt)
+- [Vídeo Explicando o Projeto]() - _Explicar porque escolheu o valor dos componentes_...
 
 TODOS OS ALUNOS PRECISAM APRESENTAR O TRABALHO PESSOALMENTE!!
 Link para apresentação do Trabalho 1: link a ser informado
-Exemplo do projeto da fonte: https://github.com/bmarquescost/Projeto-Eletronica-USP
